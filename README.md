@@ -178,10 +178,11 @@ honestly so a reviewer knows exactly what the conclusions rest on.
 
 ---
 
-## Author
+## Contributors
 
-**Oussama Hamada** — Cybersecurity Engineering student, TEK-UP University (Tunisia)  
-[GitHub](https://github.com/oussema-007) · [LinkedIn](https://www.linkedin.com/in/oussama-hamada-034b32229/)
+| | Name | Role | Links |
+|-|------|------|-------|
+| <img src="https://github.com/oussema-007.png" width="40" style="border-radius:50%"> | **Oussama Hamada** | Analyst A — host / endpoint / SIEM | [GitHub](https://github.com/oussema-007) · [LinkedIn](https://www.linkedin.com/in/oussama-hamada-034b32229/) |
+| | **Amir Ghdiri** | Analyst B — network / malware | — |
 
-*Analysis documents and the forensic report are written in French. This project was completed as a two-person
-academic exercise over 6 weeks.*
+*TEK-UP University (Tunisia) — 6-week academic exercise. Analysis documents and the forensic report are written in French.*
