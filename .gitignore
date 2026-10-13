@@ -1,0 +1,35 @@
+# ── Raw forensic evidence — NEVER commit ──────────────────────
+# Contains live malware and/or files too large for GitHub (100 MB cap).
+
+# Malware & binaries
+*.exe
+*.dll
+*.bin
+*.msi
+
+# Memory & disk images
+*.vmem
+*.vmdk
+*.vmsn
+*.vmss
+*.vmsd
+
+# Network captures (contain the malware binary in the HTTP transfer)
+*.pcap
+*.pcapng
+
+# Windows event logs
+*.evtx
+
+# SIEM export (can be large)
+wk0-alerts.json
+*-alerts.json
+
+# ── OS / editor junk ──────────────────────────────────────────
+.DS_Store
+Thumbs.db
+desktop.ini
+*~
+*.swp
+.vscode/
+.idea/

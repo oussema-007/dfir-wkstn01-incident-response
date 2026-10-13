@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Projet 4 — Plan DFIR allégé (6 semaines du prof)</title>
+<style>
+  :root{
+    --bg:#f6f7f9; --panel:#ffffff; --panel-2:#f0f2f5; --ink:#15181d; --ink-2:#4a5260;
+    --muted:#747d8c; --line:#e3e7ec; --line-2:#d3d9e0;
+    --accent:#e23c4a;
+    --teal:#0f8a6b; --teal-bg:#e3f5ef; --teal-ink:#0b6a52;
+    --blue:#2563c9; --blue-bg:#e8f0fd; --blue-ink:#1b4da1;
+    --amber:#b9790f; --amber-bg:#fbf0dc; --amber-ink:#8f5c08;
+    --purple:#8140d2; --purple-bg:#f0e8fb; --purple-ink:#5e2ba1;
+    --red:#c43b45; --red-bg:#fdecee; --red-ink:#9a2a32;
+    --green:#2a7a3c; --green-bg:#e3f3e6; --green-ink:#1d5a2c;
+    --radius:14px; --maxw:900px;
+    box-sizing:border-box;
+    padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+  }
+  :root:not([data-theme="light"]){
+    @media (prefers-color-scheme: dark){
+      --bg:#0e1116; --panel:#171b22; --panel-2:#1f242d; --ink:#eef1f5; --ink-2:#aeb6c2;
+      --muted:#7d8694; --line:#262c36; --line-2:#333b47;
+      --accent:#f4606d;
+      --teal:#39c9a3; --teal-bg:#0f241d; --teal-ink:#7fe0c5;
+      --blue:#5c9bf0; --blue-bg:#121f33; --blue-ink:#9cc2f5;
+      --amber:#e3a23e; --amber-bg:#2a1f0d; --amber-ink:#ecc07f;
+      --purple:#b084eb; --purple-bg:#1e1430; --purple-ink:#c9adf5;
+      --red:#f4606d; --red-bg:#2a1518; --red-ink:#f4959d;
+      --green:#5bc17a; --green-bg:#102519; --green-ink:#9fd9ae;
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#0e1116; --panel:#171b22; --panel-2:#1f242d; --ink:#eef1f5; --ink-2:#aeb6c2;
+    --muted:#7d8694; --line:#262c36; --line-2:#333b47;
+    --accent:#f4606d;
+    --teal:#39c9a3; --teal-bg:#0f241d; --teal-ink:#7fe0c5;
+    --blue:#5c9bf0; --blue-bg:#121f33; --blue-ink:#9cc2f5;
+    --amber:#e3a23e; --amber-bg:#2a1f0d; --amber-ink:#ecc07f;
+    --purple:#b084eb; --purple-bg:#1e1430; --purple-ink:#c9adf5;
+    --red:#f4606d; --red-bg:#2a1518; --red-ink:#f4959d;
+    --green:#5bc17a; --green-bg:#102519; --green-ink:#9fd9ae;
+  }
+  *{box-sizing:inherit}
+  html{scroll-padding-top:env(safe-area-inset-top,0px)}
+  body{margin:0; background:var(--bg); color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    line-height:1.6; -webkit-font-smoothing:antialiased}
+  .wrap{max-width:var(--maxw); margin:0 auto; padding:clamp(18px,4vw,36px) clamp(14px,4vw,28px) 64px;}
+  .eyebrow{font-size:12px; letter-spacing:.14em; text-transform:uppercase; color:var(--accent); font-weight:700; margin:0 0 6px}
+  h1{font-size:clamp(22px,4.4vw,32px); line-height:1.2; margin:0 0 8px; font-weight:700}
+  .sub{color:var(--ink-2); font-size:clamp(14px,2.4vw,16px); margin:0}
+
+  .light{margin:18px 0 0; padding:14px 16px; background:var(--green-bg); border:1px solid var(--green); border-radius:12px; color:var(--green-ink); font-size:13.5px}
+  .light b{color:var(--green-ink)}
+
+  .progress-dual{display:grid; grid-template-columns:1fr 1fr; gap:14px; margin:16px 0 22px}
+  @media(max-width:620px){.progress-dual{grid-template-columns:1fr}}
+  .pcard{background:var(--panel); border:1px solid var(--line); border-radius:var(--radius); padding:14px 16px}
+  .pcard.A{border-top:3px solid var(--teal)}
+  .pcard.B{border-top:3px solid var(--purple)}
+  .pcard .hdr{display:flex; align-items:center; justify-content:space-between; margin-bottom:8px}
+  .pcard .who{font-size:12.5px; font-weight:700; letter-spacing:.08em; text-transform:uppercase}
+  .pcard.A .who{color:var(--teal-ink)} .pcard.B .who{color:var(--purple-ink)}
+  .pcard .pct{font-size:22px; font-weight:700; font-variant-numeric:tabular-nums}
+  .pcard .bar{height:8px; background:var(--panel-2); border-radius:6px; overflow:hidden}
+  .pcard.A .bar>span{background:var(--teal)}
+  .pcard.B .bar>span{background:var(--purple)}
+  .pcard .bar>span{display:block; height:100%; width:0%; border-radius:6px; transition:width .35s ease}
+  .pcard .meta{font-size:12.5px; color:var(--muted); margin-top:7px}
+
+  .controls{display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin-bottom:14px}
+  .filter{display:inline-flex; background:var(--panel); border:1px solid var(--line); border-radius:999px; padding:3px; flex-wrap:wrap}
+  .filter button{background:none; border:0; padding:7px 12px; border-radius:999px; cursor:pointer; font-size:12.5px; font-weight:600; color:var(--ink-2)}
+  .filter button.on{background:var(--ink); color:var(--bg)}
+  .reset-btn{background:none; border:1px solid var(--line-2); color:var(--ink-2); font-size:12.5px; padding:7px 12px; border-radius:8px; cursor:pointer; margin-left:auto}
+  .reset-btn:hover{border-color:var(--accent); color:var(--accent)}
+
+  nav.weeks{display:flex; gap:8px; overflow-x:auto; padding:4px 0 10px; margin:0 0 18px; -webkit-overflow-scrolling:touch}
+  nav.weeks button{flex:0 0 auto; background:var(--panel); border:1px solid var(--line); color:var(--ink-2); padding:9px 15px; border-radius:999px; cursor:pointer; font-size:13.5px; font-weight:600; white-space:nowrap}
+  nav.weeks button:hover{border-color:var(--line-2)}
+  nav.weeks button.active{background:var(--accent); border-color:var(--accent); color:#fff}
+  nav.weeks button .dot{display:inline-block; width:7px; height:7px; border-radius:50%; margin-left:6px; vertical-align:middle; opacity:0; background:var(--teal)}
+  nav.weeks button.complete .dot{opacity:1}
+  nav.weeks button.w0{background:var(--red-bg); color:var(--red-ink); border-color:var(--red)}
+  nav.weeks button.w0.active{background:var(--red); color:#fff; border-color:var(--red)}
+
+  .panel{background:var(--panel); border:1px solid var(--line); border-radius:var(--radius); padding:clamp(18px,4vw,28px); display:none}
+  .panel.active{display:block; animation:fade .25s ease}
+  @keyframes fade{from{opacity:0; transform:translateY(6px)} to{opacity:1; transform:none}}
+
+  .wk-head{display:flex; align-items:baseline; gap:12px; flex-wrap:wrap; margin-bottom:4px}
+  .wk-num{font-size:13px; font-weight:700; letter-spacing:.1em; text-transform:uppercase; color:var(--accent)}
+  .wk-num.w0{color:var(--red-ink)}
+  .wk-title{font-size:clamp(18px,3.2vw,22px); font-weight:700; margin:0}
+  .wk-prof{font-size:12.5px; color:var(--muted); margin:6px 0 0; font-style:italic}
+  .wk-goal{color:var(--ink-2); font-size:14.5px; margin:14px 0 20px; padding:12px 14px; background:var(--panel-2); border-radius:10px}
+  .wk-goal strong{color:var(--ink)}
+
+  .section-label{font-size:12px; letter-spacing:.1em; text-transform:uppercase; color:var(--muted); font-weight:700; margin:22px 0 10px; display:flex; align-items:center; gap:8px}
+  .section-label .who-chip{font-size:11px; padding:2px 8px; border-radius:999px; font-weight:700; letter-spacing:0; text-transform:none}
+  .who-A{background:var(--teal-bg); color:var(--teal-ink)}
+  .who-B{background:var(--purple-bg); color:var(--purple-ink)}
+  .who-BOTH{background:var(--amber-bg); color:var(--amber-ink)}
+
+  .lane{border-left:3px solid var(--line-2); padding:4px 0 4px 14px; margin-bottom:14px}
+  .lane.A{border-color:var(--teal)}
+  .lane.B{border-color:var(--purple)}
+  .lane.BOTH{border-color:var(--amber)}
+
+  .tasks{margin:0; padding:0; list-style:none}
+  .tasks li{position:relative; padding:5px 0 5px 20px; font-size:14px; color:var(--ink-2)}
+  .tasks li::before{content:""; position:absolute; left:2px; top:12px; width:6px; height:6px; border-radius:50%; background:var(--accent)}
+
+  .tools{display:flex; flex-wrap:wrap; gap:6px; margin:2px 0}
+  .tool{font-size:12px; font-weight:600; padding:4px 9px; border-radius:7px; background:var(--blue-bg); color:var(--blue-ink)}
+
+  .deliverables{margin:2px 0 0; padding:0; list-style:none}
+  .deliverables li{display:flex; align-items:flex-start; gap:11px; padding:10px 12px; border:1px solid var(--line); border-radius:10px; margin-bottom:7px; background:var(--panel-2); cursor:pointer; transition:border-color .15s}
+  .deliverables li .mark{font-size:11px; font-weight:700; padding:2px 7px; border-radius:5px; margin-left:auto; flex:0 0 auto}
+  .deliverables li.A .mark{background:var(--teal-bg); color:var(--teal-ink)}
+  .deliverables li.B .mark{background:var(--purple-bg); color:var(--purple-ink)}
+  .deliverables li.BOTH .mark{background:var(--amber-bg); color:var(--amber-ink)}
+  .deliverables li:hover{border-color:var(--line-2)}
+  .deliverables input{appearance:none; -webkit-appearance:none; width:19px; height:19px; flex:0 0 auto; margin-top:1px; border:1.8px solid var(--line-2); border-radius:5px; cursor:pointer; position:relative; transition:all .15s}
+  .deliverables input:checked{background:var(--teal); border-color:var(--teal)}
+  .deliverables input:checked::after{content:""; position:absolute; left:5.5px; top:2px; width:4px; height:9px; border:solid #fff; border-width:0 2px 2px 0; transform:rotate(45deg)}
+  .deliverables label{font-size:14px; color:var(--ink); cursor:pointer; line-height:1.5; flex:1}
+  .deliverables li.checked label{color:var(--muted); text-decoration:line-through}
+  .deliverables li.hidden{display:none}
+
+  .sync{margin-top:16px; padding:12px 14px; border:1px dashed var(--amber); background:var(--amber-bg); color:var(--amber-ink); border-radius:10px; font-size:13.5px}
+  .sync b{color:var(--amber-ink)}
+
+  .workload{display:inline-block; font-size:11px; font-weight:700; padding:3px 9px; border-radius:5px; background:var(--teal-bg); color:var(--teal-ink); margin-left:8px}
+
+  footer{margin-top:28px; color:var(--muted); font-size:12.5px; text-align:center; line-height:1.7}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <p class="eyebrow">Projet 4 · équipe de 2 · version allégée</p>
+  <h1>Plan DFIR — 6 semaines (titres du prof respectés)</h1>
+  <p class="sub">Chaque semaine garde exactement le titre et l'objectif du prof. Le contenu est allégé : outils de base uniquement, pas de super-timeline plaso, pas de Zeek, pas de YARA custom, pas de RegRipper. Travail léger mais toutes les cases cochées.</p>
+
+  <div class="light">
+    <b>Charge de travail estimée :</b> environ 4–6 heures de travail par semaine et par personne. On réutilise Wazuh + Kali de LogSentinel. On ajoute uniquement WKSTN01 (pas de DC01). Une seule chaîne d'attaque simple avec Metasploit.
+  </div>
+
+  <div class="progress-dual">
+    <div class="pcard A">
+      <div class="hdr"><span class="who">Analyste A — Hôte &amp; endpoint</span><span class="pct" id="pctA">0%</span></div>
+      <div class="bar"><span id="barA"></span></div>
+      <p class="meta" id="metaA">0 / 0 terminés · mémoire · disque · logs Windows</p>
+    </div>
+    <div class="pcard B">
+      <div class="hdr"><span class="who">Analyste B — Réseau &amp; malware</span><span class="pct" id="pctB">0%</span></div>
+      <div class="bar"><span id="barB"></span></div>
+      <p class="meta" id="metaB">0 / 0 terminés · PCAP · malware</p>
+    </div>
+  </div>
+
+  <div class="controls">
+    <div class="filter" id="filter">
+      <button data-f="ALL" class="on">Tous</button>
+      <button data-f="A">Analyste A</button>
+      <button data-f="B">Analyste B</button>
+      <button data-f="BOTH">Commun</button>
+    </div>
+    <button class="reset-btn" id="resetBtn">Réinitialiser</button>
+  </div>
+
+  <nav class="weeks" id="weekNav"></nav>
+  <div id="panels"></div>
+
+  <footer>
+    <b>A</b> = Analyste hôte · <b>B</b> = Analyste réseau · <b>BOTH</b> = livrable commun<br>
+    Progression sauvegardée dans ce navigateur
+  </footer>
+</div>
+
+<script>
+const WEEKS = [
+  {
+    id:"w0", w0:true, num:"Semaine 0 · préparation",
+    title:"Monter WKSTN01 &amp; exécuter l'attaque",
+    prof:"Hors scope prof — préparation du scénario que vous allez investiguer en semaines 1–6.",
+    goal:"On réutilise Wazuh et Kali de LogSentinel. On ajoute juste WKSTN01 (Windows 10). Attaque simple avec Metasploit : phishing → reverse shell → persistance → mimikatz → exfil. Puis on gèle tout.",
+    workload:"≈ 1 journée à deux",
+    lanes:[
+      {who:"BOTH", tasks:[
+        "Déployer WKSTN01 (Windows 10) sur 192.168.100.0/24",
+        "Installer Sysmon (config SwiftOnSecurity) + agent Wazuh sur WKSTN01",
+        "Vérifier que les événements arrivent dans le dashboard Wazuh",
+        "Snapshot « état propre » + hashes SHA-256"
+      ]},
+      {who:"B", tasks:[
+        "Rôle attaquant : générer la charge avec msfvenom (payload Meterpreter dans un .exe)",
+        "Simuler la livraison phishing (double-clic manuel sur WKSTN01, OK pour un mini-projet)",
+        "Dans Meterpreter : getuid, persistence (clé Run), hashdump / load mimikatz",
+        "Exfiltrer un fichier bidon vers Kali en HTTP"
+      ]},
+      {who:"A", tasks:[
+        "Rôle défenseur : lancer tcpdump sur l'interface host-only pendant toute l'attaque",
+        "Noter l'horodatage de chaque étape attaquant (sert à vérifier la timeline S4)",
+        "Suspendre WKSTN01 (le .vmem sert de dump mémoire)",
+        "Copier le .vmdk, exporter les .evtx, le PCAP, les alertes Wazuh — tout hasher"
+      ]}
+    ],
+    tools:["VMware","Windows 10","Sysmon","Wazuh (réutilisé)","Kali (réutilisé)","Metasploit","msfvenom","mimikatz","tcpdump","sha256sum"],
+    deliverables:[
+      {who:"BOTH", text:"WKSTN01 déployée, Sysmon + agent Wazuh actifs"},
+      {who:"B",    text:"Chaîne d'attaque documentée (étapes + horodatage)"},
+      {who:"A",    text:"Dossier de preuves scellé (mémoire + disque + PCAP + .evtx + alertes Wazuh)"},
+      {who:"BOTH", text:"Chaîne de custody initialisée (SHA-256 par fichier)"}
+    ],
+    sync:"Un seul créneau commun : d'abord le build (2h), puis l'attaque (1h), puis la préservation (1h)."
+  },
+  {
+    id:"w1", num:"Semaine 1",
+    title:"Recevoir le scénario, préserver les preuves, plan d'investigation",
+    prof:"Prof : « Recevoir le scénario ; préserver les preuves ; définir le plan d'investigation. »",
+    goal:"Vous repartez de zéro mentalement : on fait comme si le dossier venait d'arriver. Vous verrouillez les preuves et écrivez un petit plan.",
+    workload:"≈ 3 heures par personne",
+    lanes:[
+      {who:"BOTH", tasks:[
+        "Écrire une note d'intake (1 page) : contexte, ce qu'on sait, ce qu'on ne sait pas",
+        "Re-hasher le dossier de preuves après copie sur la VM analyste",
+        "Chaîne de custody : qui touche quoi, quand"
+      ]},
+      {who:"A", tasks:[
+        "Lister les artefacts hôte à analyser : mémoire, disque, logs Windows",
+        "Rédiger 3–5 hypothèses endpoint (vecteur, persistance)"
+      ]},
+      {who:"B", tasks:[
+        "Lister les artefacts réseau : PCAP, alertes Wazuh",
+        "Rédiger 3–5 hypothèses réseau (C2, exfil)"
+      ]}
+    ],
+    tools:["sha256sum","tableur ou Markdown"],
+    deliverables:[
+      {who:"BOTH", text:"Note d'intake (1 page)"},
+      {who:"BOTH", text:"Chaîne de custody mise à jour"},
+      {who:"A",    text:"Plan d'investigation hôte (court)"},
+      {who:"B",    text:"Plan d'investigation réseau (court)"}
+    ],
+    sync:"30 min en fin de semaine pour relire mutuellement les deux plans."
+  },
+  {
+    id:"w2", num:"Semaine 2",
+    title:"Journaux, comptes, processus et artefacts du système de fichiers",
+    prof:"Prof : « Analyser journaux, comptes, processus et artefacts du système de fichiers. »",
+    goal:"A traite la machine (mémoire + disque + registre + logs). B commence le PCAP en parallèle pour que les deux voies démarrent.",
+    workload:"≈ 5–6 heures par personne",
+    lanes:[
+      {who:"A", tasks:[
+        "Mémoire — Volatility 3 : pslist, pstree, cmdline, netscan, malfind (4 commandes, c'est suffisant)",
+        "Disque — Autopsy : parcourir MFT, prefetch, fichiers récemment créés dans le profil utilisateur",
+        "Registre (via Autopsy ou Autoruns.exe) : clés Run, services, tâches planifiées",
+        "Journaux Windows (Event Viewer ou EvtxECmd) : 4624/4625 (connexions), 4688 (processus), Sysmon event 1/3/10/13"
+      ]},
+      {who:"B", tasks:[
+        "Ouvrir le PCAP dans Wireshark",
+        "Statistiques → Conversations : repérer les destinations suspectes",
+        "Filtrer sur l'IP Kali pour isoler le trafic malveillant"
+      ]}
+    ],
+    tools:["Volatility 3","Autopsy","Autoruns","EvtxECmd ou Event Viewer","Wireshark"],
+    deliverables:[
+      {who:"A", text:"Rapport findings hôte (quelques pages : processus suspect identifié, persistance trouvée, logs clés)"},
+      {who:"A", text:"Arbre de processus de l'intrusion (schéma simple)"},
+      {who:"B", text:"Note de triage réseau initiale"}
+    ],
+    sync:"Stand-up 15 min en milieu de semaine : A dit quel PID est suspect, B confirme s'il parle au Kali."
+  },
+  {
+    id:"w3", num:"Semaine 3",
+    title:"Trafic réseau, fichiers suspects et indicateurs malware",
+    prof:"Prof : « Investiguer le trafic réseau, les fichiers suspects et les indicateurs malware. »",
+    goal:"B termine le réseau et fait le triage du binaire malveillant. A finit sa partie hôte si pas déjà terminée.",
+    workload:"≈ 5 heures par personne",
+    lanes:[
+      {who:"B", tasks:[
+        "Wireshark : identifier précisément le canal C2 (Meterpreter sur quel port) et l'exfiltration HTTP",
+        "Export du binaire malveillant depuis le disque (Autopsy)",
+        "Triage statique : strings sur le .exe, hash SHA-256, lookup VirusTotal",
+        "YARA : lancer les règles publiques (yara-rules sur GitHub) contre le binaire"
+      ]},
+      {who:"A", tasks:[
+        "Finaliser le rapport hôte",
+        "Lister les IOCs côté hôte (hash du binaire, chemin, clé Run utilisée)"
+      ]},
+      {who:"BOTH", tasks:[
+        "Consolider les IOCs dans un seul fichier CSV : hashes, IP, domaines, chemins, clés registre"
+      ]}
+    ],
+    tools:["Wireshark","Autopsy","strings","sha256sum","YARA (règles publiques)","VirusTotal"],
+    deliverables:[
+      {who:"B",    text:"Rapport réseau + triage malware (quelques pages)"},
+      {who:"BOTH", text:"Jeu d'IOCs consolidé (CSV)"}
+    ],
+    sync:"Fin de semaine : fusionner les IOCs dans un seul fichier maître."
+  },
+  {
+    id:"w4", num:"Semaine 4",
+    title:"Chronologie, chemin d'attaque, cause et impact",
+    prof:"Prof : « Reconstruire la chronologie et le chemin d'attaque ; identifier cause et impact. »",
+    goal:"Vous construisez une timeline manuelle dans un tableau (pas de plaso). Vous racontez l'histoire minute par minute et vous mappez ça sur ATT&CK.",
+    workload:"≈ 4 heures par personne (idéalement ensemble)",
+    lanes:[
+      {who:"BOTH", tasks:[
+        "Créer un tableau timeline (Excel ou Markdown) : colonnes = horodatage, source, événement, technique ATT&CK",
+        "Remplir avec 15–25 lignes qui racontent l'intrusion complète",
+        "Mapper les techniques observées sur MITRE ATT&CK (environ 5–6 techniques)",
+        "Rédiger une courte analyse : vecteur d'entrée (cause), ce qui a été exfiltré (impact)"
+      ]}
+    ],
+    tools:["Tableur / Markdown","MITRE ATT&CK Navigator (en ligne, gratuit)"],
+    deliverables:[
+      {who:"BOTH", text:"Timeline manuelle (tableau)"},
+      {who:"BOTH", text:"Liste des techniques ATT&CK avec IDs"},
+      {who:"BOTH", text:"Analyse cause racine + impact (1 page)"}
+    ],
+    sync:"Une session commune de 3–4h suffit pour toute la semaine."
+  },
+  {
+    id:"w5", num:"Semaine 5",
+    title:"Confinement, éradication, reprise, mesures préventives",
+    prof:"Prof : « Définir confinement, éradication, reprise et mesures préventives. »",
+    goal:"Vous écrivez les contre-mesures. Split naturel : A côté endpoint, B côté réseau.",
+    workload:"≈ 4 heures par personne",
+    lanes:[
+      {who:"A", tasks:[
+        "Confinement endpoint : isolation réseau de WKSTN01, désactivation du compte compromis",
+        "Éradication : réimage de la VM, rotation des mots de passe",
+        "Prévention endpoint : blocage macros Office, LSASS protection, EDR"
+      ]},
+      {who:"B", tasks:[
+        "Confinement réseau : blocage IP Kali au pare-feu, règles pfSense",
+        "Prévention réseau : filtrage de sortie, inspection trafic",
+        "Mentionner comment la règle Wazuh 100100 de LogSentinel aurait pu aider (bonus)"
+      ]},
+      {who:"BOTH", tasks:[
+        "Pour chaque technique ATT&CK listée en S4, nommer au moins un contrôle qui l'aurait bloquée ou détectée"
+      ]}
+    ],
+    tools:["MITRE ATT&CK","Wazuh"],
+    deliverables:[
+      {who:"A",    text:"Section confinement + éradication + prévention endpoint"},
+      {who:"B",    text:"Section confinement + prévention réseau"},
+      {who:"BOTH", text:"Tableau contrôles → ATT&CK"}
+    ],
+    sync:"Fin de semaine : relecture croisée (30 min)."
+  },
+  {
+    id:"w6", num:"Semaine 6",
+    title:"Rapport forensic, dossier de preuves, briefing d'incident",
+    prof:"Prof : « Finaliser le rapport forensic, le dossier de preuves et le briefing d'incident. »",
+    goal:"Vous assemblez tout en un rapport PDF propre et vous préparez la présentation.",
+    workload:"≈ 6 heures par personne",
+    lanes:[
+      {who:"A", tasks:[
+        "Rédiger la partie hôte du rapport (findings mémoire, disque, logs, persistance)",
+        "Préparer les slides de la partie « enquête endpoint »"
+      ]},
+      {who:"B", tasks:[
+        "Rédiger la partie réseau + malware du rapport",
+        "Préparer les slides de la partie « enquête réseau »"
+      ]},
+      {who:"BOTH", tasks:[
+        "Assembler le rapport final (10–15 pages max) : résumé exécutif, intake, timeline, findings, IOCs, mesures, conclusion",
+        "Packager le dossier de preuves avec README listant tous les fichiers + SHA-256",
+        "Finaliser les slides + répétition générale de la présentation"
+      ]}
+    ],
+    tools:["Word / LaTeX / Markdown","PowerPoint / Beamer"],
+    deliverables:[
+      {who:"BOTH", text:"Rapport forensic PDF (10–15 pages)"},
+      {who:"BOTH", text:"Dossier de preuves + README"},
+      {who:"BOTH", text:"Slides de briefing"},
+      {who:"BOTH", text:"Démo de 10–15 min répétée"}
+    ],
+    sync:"Répétition générale 48h avant la soutenance."
+  }
+];
+
+const STORE_KEY = "dfir_plan_v5_light_6weeks";
+let progress = {};
+let filter = "ALL";
+try { progress = JSON.parse(localStorage.getItem(STORE_KEY) || "{}"); } catch(e){ progress = {}; }
+function save(){ try { localStorage.setItem(STORE_KEY, JSON.stringify(progress)); } catch(e){} }
+
+const nav = document.getElementById("weekNav");
+const panels = document.getElementById("panels");
+
+function allDeliverables(){
+  const items=[];
+  WEEKS.forEach(w=>w.deliverables.forEach((d,i)=>items.push({id:w.id+"_"+i, who:d.who})));
+  return items;
+}
+function weekComplete(w){
+  return w.deliverables.length>0 && w.deliverables.every((_,i)=>progress[w.id+"_"+i]);
+}
+
+WEEKS.forEach((w)=>{
+  const btn=document.createElement("button");
+  btn.innerHTML=`${w.id==="w0"?"S0":w.id.toUpperCase()}<span class="dot"></span>`;
+  btn.dataset.target=w.id;
+  if(w.w0) btn.classList.add("w0");
+  btn.addEventListener("click",()=>show(w.id));
+  nav.appendChild(btn);
+
+  const p=document.createElement("div");
+  p.className="panel"; p.id="panel_"+w.id;
+
+  const lanesHTML = w.lanes.map(l=>{
+    const label = l.who==="A"?"Analyste A (hôte)":l.who==="B"?"Analyste B (réseau)":"Travail commun";
+    return `
+      <div class="section-label" data-lane-label="${l.who}">Tâches <span class="who-chip who-${l.who}">${label}</span></div>
+      <div class="lane ${l.who}">
+        <ul class="tasks">${l.tasks.map(t=>`<li>${t}</li>`).join("")}</ul>
+      </div>`;
+  }).join("");
+
+  p.innerHTML=`
+    <div class="wk-head">
+      <span class="wk-num ${w.w0?'w0':''}">${w.num}</span>
+      ${w.workload?`<span class="workload">${w.workload}</span>`:""}
+    </div>
+    <h2 class="wk-title">${w.title}</h2>
+    <p class="wk-prof">${w.prof}</p>
+    <div class="wk-goal">${w.goal}</div>
+    ${lanesHTML}
+    <div class="section-label">Outils</div>
+    <div class="tools">${w.tools.map(t=>`<span class="tool">${t}</span>`).join("")}</div>
+    <div class="section-label">Livrables</div>
+    <ul class="deliverables">${w.deliverables.map((d,i)=>{
+      const id=w.id+"_"+i; const on=progress[id]?"checked":"";
+      const label=d.who==="A"?"A":d.who==="B"?"B":"BOTH";
+      return `<li class="${d.who} ${on?'checked':''}" data-id="${id}" data-who="${d.who}">
+        <input type="checkbox" ${on} aria-label="${d.text}">
+        <label>${d.text}</label>
+        <span class="mark">${label}</span></li>`;
+    }).join("")}</ul>
+    ${w.sync?`<div class="sync"><b>Point de sync :</b> ${w.sync}</div>`:""}
+  `;
+  panels.appendChild(p);
+});
+
+function show(id){
+  document.querySelectorAll("nav.weeks button").forEach(b=>b.classList.toggle("active",b.dataset.target===id));
+  document.querySelectorAll(".panel").forEach(p=>p.classList.toggle("active",p.id==="panel_"+id));
+}
+
+panels.addEventListener("click",(e)=>{
+  const li=e.target.closest("li[data-id]"); if(!li) return;
+  const id=li.dataset.id;
+  const box=li.querySelector("input");
+  if(e.target!==box){ box.checked=!box.checked; }
+  progress[id]=box.checked;
+  li.classList.toggle("checked",box.checked);
+  save(); refresh();
+});
+
+document.getElementById("filter").addEventListener("click",(e)=>{
+  const b=e.target.closest("button[data-f]"); if(!b) return;
+  filter=b.dataset.f;
+  document.querySelectorAll("#filter button").forEach(x=>x.classList.toggle("on",x===b));
+  applyFilter();
+});
+function laneVisible(who){
+  if(filter==="ALL") return true;
+  if(filter==="BOTH") return who==="BOTH";
+  return who===filter || who==="BOTH";
+}
+function applyFilter(){
+  document.querySelectorAll("li[data-who]").forEach(li=>{
+    li.classList.toggle("hidden", !laneVisible(li.dataset.who));
+  });
+  document.querySelectorAll(".lane").forEach(l=>{
+    const w=l.classList.contains("A")?"A":l.classList.contains("B")?"B":"BOTH";
+    const show = laneVisible(w);
+    l.style.display = show?"block":"none";
+    const label = l.previousElementSibling;
+    if(label && label.dataset.laneLabel) label.style.display = show?"flex":"none";
+  });
+}
+
+function refresh(){
+  const items=allDeliverables();
+  const forA=items.filter(i=> i.who==="A" || i.who==="BOTH");
+  const forB=items.filter(i=> i.who==="B" || i.who==="BOTH");
+  const stat=arr=>({done:arr.filter(i=>progress[i.id]).length, total:arr.length});
+  const sA=stat(forA), sB=stat(forB);
+  const pctA=sA.total?Math.round(sA.done/sA.total*100):0;
+  const pctB=sB.total?Math.round(sB.done/sB.total*100):0;
+  document.getElementById("barA").style.width=pctA+"%"; document.getElementById("pctA").textContent=pctA+"%";
+  document.getElementById("barB").style.width=pctB+"%"; document.getElementById("pctB").textContent=pctB+"%";
+  document.getElementById("metaA").textContent=`${sA.done} / ${sA.total} terminés · mémoire · disque · logs Windows`;
+  document.getElementById("metaB").textContent=`${sB.done} / ${sB.total} terminés · PCAP · malware`;
+  WEEKS.forEach(w=>{
+    const b=[...nav.children].find(x=>x.dataset.target===w.id);
+    if(b) b.classList.toggle("complete",weekComplete(w));
+  });
+}
+
+document.getElementById("resetBtn").addEventListener("click",()=>{
+  if(!confirm("Réinitialiser toute la progression ?")) return;
+  progress={}; save();
+  document.querySelectorAll('.deliverables input').forEach(b=>b.checked=false);
+  document.querySelectorAll('.deliverables li').forEach(li=>li.classList.remove('checked'));
+  refresh();
+});
+
+show("w0");
+applyFilter();
+refresh();
+</script>
+</body>
+</html>

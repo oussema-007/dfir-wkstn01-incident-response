@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Projet 4 — Architecture (version allégée)</title>
+<style>
+  :root{
+    --bg:#f6f7f9; --panel:#ffffff; --panel-2:#f0f2f5; --ink:#15181d; --ink-2:#4a5260;
+    --muted:#747d8c; --line:#e3e7ec; --line-2:#d3d9e0;
+    --accent:#e23c4a;
+    --red:#c43b45; --red-bg:#fdecee; --red-ink:#9a2a32;
+    --blue:#2563c9; --blue-bg:#e8f0fd; --blue-ink:#1b4da1;
+    --teal:#0f8a6b; --teal-bg:#e3f5ef; --teal-ink:#0b6a52;
+    --amber:#b9790f; --amber-bg:#fbf0dc; --amber-ink:#8f5c08;
+    --gray:#5c6675; --gray-bg:#eceff3; --gray-ink:#3f4753;
+    --purple:#8140d2; --purple-bg:#f0e8fb; --purple-ink:#5e2ba1;
+    --green:#2a7a3c; --green-bg:#e3f3e6; --green-ink:#1d5a2c;
+    --radius:14px; --maxw:900px;
+    box-sizing:border-box;
+    padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+  }
+  :root:not([data-theme="light"]){
+    @media (prefers-color-scheme: dark){
+      --bg:#0e1116; --panel:#171b22; --panel-2:#1f242d; --ink:#eef1f5; --ink-2:#aeb6c2;
+      --muted:#7d8694; --line:#262c36; --line-2:#333b47;
+      --accent:#f4606d;
+      --red:#f4606d; --red-bg:#2a1518; --red-ink:#f4959d;
+      --blue:#5c9bf0; --blue-bg:#121f33; --blue-ink:#9cc2f5;
+      --teal:#39c9a3; --teal-bg:#0f241d; --teal-ink:#7fe0c5;
+      --amber:#e3a23e; --amber-bg:#2a1f0d; --amber-ink:#ecc07f;
+      --gray:#8b96a6; --gray-bg:#1c222b; --gray-ink:#b4bdc9;
+      --purple:#b084eb; --purple-bg:#1e1430; --purple-ink:#c9adf5;
+      --green:#5bc17a; --green-bg:#102519; --green-ink:#9fd9ae;
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#0e1116; --panel:#171b22; --panel-2:#1f242d; --ink:#eef1f5; --ink-2:#aeb6c2;
+    --muted:#7d8694; --line:#262c36; --line-2:#333b47;
+    --accent:#f4606d;
+    --red:#f4606d; --red-bg:#2a1518; --red-ink:#f4959d;
+    --blue:#5c9bf0; --blue-bg:#121f33; --blue-ink:#9cc2f5;
+    --teal:#39c9a3; --teal-bg:#0f241d; --teal-ink:#7fe0c5;
+    --amber:#e3a23e; --amber-bg:#2a1f0d; --amber-ink:#ecc07f;
+    --gray:#8b96a6; --gray-bg:#1c222b; --gray-ink:#b4bdc9;
+    --purple:#b084eb; --purple-bg:#1e1430; --purple-ink:#c9adf5;
+    --green:#5bc17a; --green-bg:#102519; --green-ink:#9fd9ae;
+  }
+  *{box-sizing:inherit}
+  html{scroll-padding-top:env(safe-area-inset-top,0px)}
+  body{margin:0; background:var(--bg); color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    line-height:1.65; -webkit-font-smoothing:antialiased}
+  .wrap{max-width:var(--maxw); margin:0 auto; padding:clamp(18px,4vw,36px) clamp(14px,4vw,28px) 64px;}
+  .eyebrow{font-size:12px; letter-spacing:.14em; text-transform:uppercase; color:var(--accent); font-weight:700; margin:0 0 6px}
+  h1{font-size:clamp(22px,4.4vw,32px); line-height:1.2; margin:0 0 8px; font-weight:700}
+  .sub{color:var(--ink-2); font-size:clamp(14px,2.4vw,16px); margin:0 0 6px}
+  h2{font-size:clamp(17px,3vw,21px); font-weight:700; margin:38px 0 4px; display:flex; align-items:center; gap:10px}
+  h2 .n{font-size:13px; color:var(--accent); font-weight:700; letter-spacing:.08em}
+  .lead{color:var(--ink-2); font-size:14.5px; margin:6px 0 16px}
+  p{font-size:14.5px}
+  .card{background:var(--panel); border:1px solid var(--line); border-radius:var(--radius); padding:clamp(16px,3.5vw,24px); margin:14px 0}
+  .scroller{overflow-x:auto; -webkit-overflow-scrolling:touch}
+  svg{display:block; width:100%; height:auto; min-width:620px}
+
+  .banner{background:var(--green-bg); border:1px solid var(--green); color:var(--green-ink); padding:14px 16px; border-radius:12px; margin:16px 0 0; font-size:13.5px}
+  .banner b{color:var(--green-ink)}
+
+  .chain{display:flex; flex-wrap:wrap; gap:8px; align-items:center; margin:6px 0}
+  .chain .st{display:flex; flex-direction:column; gap:3px; padding:9px 13px; border-radius:10px; background:var(--red-bg); min-width:120px}
+  .chain .st b{font-size:13px; color:var(--red-ink)}
+  .chain .st span{font-size:11.5px; color:var(--muted); font-family:ui-monospace,SFMono-Regular,Menlo,monospace}
+  .chain .arr{color:var(--muted); font-size:16px}
+
+  table{width:100%; border-collapse:collapse; font-size:13.5px}
+  th,td{text-align:left; padding:9px 11px; border-bottom:1px solid var(--line); vertical-align:top}
+  th{font-size:11.5px; letter-spacing:.06em; text-transform:uppercase; color:var(--muted); font-weight:700}
+  td code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace; font-size:12.5px; color:var(--red-ink); background:var(--panel-2); padding:1px 6px; border-radius:5px}
+  .who-A{color:var(--teal-ink); font-weight:700}
+  .who-B{color:var(--purple-ink); font-weight:700}
+  .who-BOTH{color:var(--amber-ink); font-weight:700}
+  .yes{color:var(--green-ink); font-weight:700}
+
+  .ram{display:grid; grid-template-columns:1fr 1fr; gap:14px}
+  @media(max-width:560px){.ram{grid-template-columns:1fr}}
+  .ram .box h3{margin:0 0 10px; font-size:14.5px; font-weight:700}
+  .ram ul{margin:0; padding:0; list-style:none; font-size:13.5px}
+  .ram li{display:flex; justify-content:space-between; padding:5px 0; border-bottom:1px dashed var(--line); color:var(--ink-2)}
+  .ram li.tot{border-bottom:none; margin-top:6px; font-weight:700; color:var(--ink)}
+  .ram li.reuse{color:var(--green-ink)}
+
+  .pill-list{margin:10px 0 0; padding:0; list-style:none}
+  .pill-list li{padding:9px 0 9px 24px; position:relative; font-size:14px; color:var(--ink-2); border-bottom:1px solid var(--line)}
+  .pill-list li:last-child{border-bottom:none}
+  .pill-list li::before{content:"→"; position:absolute; left:2px; color:var(--teal); font-weight:700}
+  .pill-list li b{color:var(--ink)}
+
+  footer{margin-top:34px; color:var(--muted); font-size:12.5px; text-align:center}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <p class="eyebrow">Projet 4 · équipe de 2 · version allégée</p>
+  <h1>Réponse à incident &amp; investigation numérique</h1>
+  <p class="sub">Version adaptée pour un mini-projet. 6 semaines du prof respectées, charge de travail raisonnable, toutes les exigences couvertes.</p>
+
+  <div class="banner">
+    <b>Principe :</b> on garde les 6 semaines du prof et toutes les exigences (mémoire, disque, journaux, réseau, malware, timeline, prévention, rapport). On enlève tout ce qui est « pro » et pas demandé : plaso, Zeek, YARA custom, RegRipper deep dive, DC01 (domaine complet). Résultat : ≈ 4–6 h/semaine/personne.
+  </div>
+
+  <h2><span class="n">01</span> Couverture des exigences du prof</h2>
+  <p class="lead">Chaque case demandée est cochée avec l'outil minimal nécessaire.</p>
+  <div class="card scroller">
+    <table>
+      <thead><tr><th>Exigence prof</th><th>Outil minimal</th><th>Semaine</th><th>Couvert</th></tr></thead>
+      <tbody>
+        <tr><td>Préservation des preuves</td><td>VMware suspend (.vmem) + copie .vmdk + sha256sum</td><td>S0 + S1</td><td class="yes">✓</td></tr>
+        <tr><td>Plan d'investigation</td><td>Document texte simple</td><td>S1</td><td class="yes">✓</td></tr>
+        <tr><td>Analyse mémoire (processus)</td><td>Volatility 3</td><td>S2</td><td class="yes">✓</td></tr>
+        <tr><td>Analyse disque / artefacts fichiers</td><td>Autopsy</td><td>S2</td><td class="yes">✓</td></tr>
+        <tr><td>Analyse comptes / connexions</td><td>EvtxECmd ou Event Viewer (4624/4625/4688)</td><td>S2</td><td class="yes">✓</td></tr>
+        <tr><td>Analyse registre / persistance</td><td>Autopsy + Autoruns.exe</td><td>S2</td><td class="yes">✓</td></tr>
+        <tr><td>Trafic réseau</td><td>Wireshark</td><td>S3</td><td class="yes">✓</td></tr>
+        <tr><td>Fichiers suspects</td><td>Autopsy (export) + strings</td><td>S3</td><td class="yes">✓</td></tr>
+        <tr><td>Indicateurs malware</td><td>YARA avec règles publiques + VirusTotal</td><td>S3</td><td class="yes">✓</td></tr>
+        <tr><td>Chronologie</td><td>Tableau Excel / Markdown (manuel)</td><td>S4</td><td class="yes">✓</td></tr>
+        <tr><td>Cause et impact</td><td>Analyse 1 page</td><td>S4</td><td class="yes">✓</td></tr>
+        <tr><td>Confinement, éradication, reprise</td><td>Document texte</td><td>S5</td><td class="yes">✓</td></tr>
+        <tr><td>Mesures préventives</td><td>Mapping ATT&amp;CK → contrôles</td><td>S5</td><td class="yes">✓</td></tr>
+        <tr><td>Rapport forensic</td><td>PDF 10–15 pages</td><td>S6</td><td class="yes">✓</td></tr>
+        <tr><td>Dossier de preuves</td><td>Archive + README + SHA-256</td><td>S6</td><td class="yes">✓</td></tr>
+        <tr><td>Briefing d'incident</td><td>Slides + démo 10–15 min</td><td>S6</td><td class="yes">✓</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h2><span class="n">02</span> Ce qui est enlevé (et pourquoi)</h2>
+  <div class="card">
+    <table>
+      <thead><tr><th>Enlevé</th><th>Pourquoi</th><th>Remplacé par</th></tr></thead>
+      <tbody>
+        <tr><td>plaso / super-timeline</td><td>Pas demandé. Juste « chronologie ».</td><td>Tableau Excel manuel 15–25 lignes</td></tr>
+        <tr><td>Zeek</td><td>Pas demandé. Surdimensionné pour un PCAP de 20 min.</td><td>Wireshark seul</td></tr>
+        <tr><td>YARA custom</td><td>Pas demandé. Juste « indicateurs malware ».</td><td>Règles YARA publiques + VirusTotal</td></tr>
+        <tr><td>RegRipper deep dive</td><td>Autopsy lit déjà le registre.</td><td>Autopsy + Autoruns.exe</td></tr>
+        <tr><td>DC01 (domaine Windows)</td><td>Pas nécessaire pour une chaîne d'attaque simple.</td><td>WKSTN01 seule</td></tr>
+        <tr><td>Mouvement latéral SMB</td><td>Besoin de DC01 pour être réaliste.</td><td>Chaîne qui s'arrête à l'exfil depuis WKSTN01</td></tr>
+        <tr><td>Sliver / C2 custom</td><td>Compliqué à mettre en place.</td><td>Meterpreter de Metasploit (standard)</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h2><span class="n">03</span> Architecture simplifiée</h2>
+  <p class="lead">Une seule VM victime, le reste réutilisé de LogSentinel.</p>
+  <div class="card scroller">
+    <svg viewBox="0 0 680 400" role="img" aria-labelledby="archtitle archdesc">
+      <title id="archtitle">Architecture allégée du laboratoire DFIR</title>
+      <desc id="archdesc">Kali (réutilisé de LogSentinel) attaque un seul poste Windows 10 (WKSTN01) sur le même réseau host-only. Les événements remontent au Wazuh existant (rhel-wazuh). Après l'attaque, les preuves sont figées et investiguées par une VM analyste isolée.</desc>
+
+      <text x="20" y="20" fill="var(--muted)" font-size="12" font-weight="700" letter-spacing="1" font-family="inherit">PHASE 1 — ATTAQUE SIMPLE</text>
+
+      <g>
+        <rect x="20" y="36" width="150" height="130" rx="12" fill="var(--green-bg)" stroke="var(--green)" stroke-width="1.5"/>
+        <text x="95" y="56" text-anchor="middle" fill="var(--green-ink)" font-size="10" font-weight="700" letter-spacing="1" font-family="inherit">RÉUTILISÉ</text>
+        <text x="95" y="76" text-anchor="middle" fill="var(--red-ink)" font-size="14" font-weight="700" font-family="inherit">Kali</text>
+        <text x="95" y="94" text-anchor="middle" fill="var(--muted)" font-size="11.5" font-family="ui-monospace,monospace">.30</text>
+        <text x="95" y="124" text-anchor="middle" fill="var(--ink-2)" font-size="12" font-family="inherit">Metasploit</text>
+        <text x="95" y="142" text-anchor="middle" fill="var(--ink-2)" font-size="12" font-family="inherit">msfvenom</text>
+        <text x="95" y="158" text-anchor="middle" fill="var(--ink-2)" font-size="12" font-family="inherit">mimikatz</text>
+      </g>
+
+      <g>
+        <rect x="230" y="36" width="190" height="130" rx="12" fill="var(--amber-bg)" stroke="var(--amber)" stroke-width="1.5"/>
+        <text x="325" y="56" text-anchor="middle" fill="var(--amber-ink)" font-size="10" font-weight="700" letter-spacing="1" font-family="inherit">NOUVEAU — 1 VM SEULEMENT</text>
+        <text x="325" y="76" text-anchor="middle" fill="var(--blue-ink)" font-size="14" font-weight="700" font-family="inherit">WKSTN01</text>
+        <text x="325" y="94" text-anchor="middle" fill="var(--muted)" font-size="11.5" font-family="ui-monospace,monospace">.40</text>
+        <text x="325" y="124" text-anchor="middle" fill="var(--ink-2)" font-size="12" font-family="inherit">Windows 10</text>
+        <text x="325" y="142" text-anchor="middle" fill="var(--ink-2)" font-size="12" font-family="inherit">+ Sysmon</text>
+        <text x="325" y="158" text-anchor="middle" fill="var(--ink-2)" font-size="12" font-family="inherit">+ agent Wazuh</text>
+      </g>
+
+      <g>
+        <rect x="480" y="36" width="180" height="130" rx="12" fill="var(--green-bg)" stroke="var(--green)" stroke-width="1.5"/>
+        <text x="570" y="56" text-anchor="middle" fill="var(--green-ink)" font-size="10" font-weight="700" letter-spacing="1" font-family="inherit">RÉUTILISÉ</text>
+        <text x="570" y="76" text-anchor="middle" fill="var(--teal-ink)" font-size="14" font-weight="700" font-family="inherit">rhel-wazuh</text>
+        <text x="570" y="94" text-anchor="middle" fill="var(--muted)" font-size="11.5" font-family="ui-monospace,monospace">.10</text>
+        <text x="570" y="124" text-anchor="middle" fill="var(--ink-2)" font-size="12" font-family="inherit">Wazuh Docker</text>
+        <text x="570" y="142" text-anchor="middle" fill="var(--ink-2)" font-size="12" font-family="inherit">dashboard</text>
+        <text x="570" y="158" text-anchor="middle" fill="var(--ink-2)" font-size="12" font-family="inherit">+ règle 100100</text>
+      </g>
+
+      <line x1="170" y1="110" x2="230" y2="110" stroke="var(--red)" stroke-width="2"/>
+      <polygon points="230,110 223,106 223,114" fill="var(--red)"/>
+      <line x1="420" y1="130" x2="480" y2="130" stroke="var(--teal)" stroke-width="1.5" stroke-dasharray="3 3"/>
+      <polygon points="480,130 474,127 474,133" fill="var(--teal)"/>
+
+      <text x="200" y="100" text-anchor="middle" fill="var(--red-ink)" font-size="10" font-family="inherit">attaque</text>
+      <text x="450" y="120" text-anchor="middle" fill="var(--teal-ink)" font-size="10" font-family="inherit">logs</text>
+
+      <line x1="20" y1="200" x2="660" y2="200" stroke="var(--line-2)" stroke-width="1" stroke-dasharray="4 4"/>
+      <text x="20" y="226" fill="var(--muted)" font-size="12" font-weight="700" letter-spacing="1" font-family="inherit">PHASE 2 — ANALYSE</text>
+
+      <g>
+        <rect x="20" y="240" width="330" height="140" rx="12" fill="var(--gray-bg)" stroke="var(--gray)" stroke-width="1"/>
+        <text x="185" y="264" text-anchor="middle" fill="var(--gray-ink)" font-size="14" font-weight="700" font-family="inherit">Dossier de preuves</text>
+        <text x="185" y="292" text-anchor="middle" fill="var(--ink-2)" font-size="12.5" font-family="inherit">Dump mémoire WKSTN01 (.vmem)</text>
+        <text x="185" y="312" text-anchor="middle" fill="var(--ink-2)" font-size="12.5" font-family="inherit">Image disque (.vmdk)</text>
+        <text x="185" y="332" text-anchor="middle" fill="var(--ink-2)" font-size="12.5" font-family="inherit">PCAP · Journaux Windows (.evtx)</text>
+        <text x="185" y="352" text-anchor="middle" fill="var(--ink-2)" font-size="12.5" font-family="inherit">Alertes Wazuh exportées</text>
+        <text x="185" y="372" text-anchor="middle" fill="var(--ink-2)" font-size="12.5" font-family="inherit">+ SHA-256 de tout</text>
+      </g>
+
+      <path d="M 325 166 C 325 210, 185 215, 185 240" fill="none" stroke="var(--gray)" stroke-width="1.3" stroke-dasharray="4 4"/>
+      <polygon points="185,240 182,233 188,233" fill="var(--gray)"/>
+
+      <g>
+        <rect x="380" y="240" width="280" height="140" rx="12" fill="var(--teal-bg)" stroke="var(--teal)" stroke-width="1"/>
+        <text x="520" y="264" text-anchor="middle" fill="var(--teal-ink)" font-size="14" font-weight="700" font-family="inherit">VM Analyste</text>
+        <text x="520" y="284" text-anchor="middle" fill="var(--muted)" font-size="12" font-family="inherit">Isolée · hors ligne</text>
+        <text x="520" y="310" text-anchor="middle" fill="var(--teal-ink)" font-size="12.5" font-family="inherit">Volatility 3 · Autopsy</text>
+        <text x="520" y="332" text-anchor="middle" fill="var(--teal-ink)" font-size="12.5" font-family="inherit">Autoruns · EvtxECmd</text>
+        <text x="520" y="354" text-anchor="middle" fill="var(--teal-ink)" font-size="12.5" font-family="inherit">Wireshark · strings</text>
+        <text x="520" y="372" text-anchor="middle" fill="var(--teal-ink)" font-size="12.5" font-family="inherit">YARA (règles publiques)</text>
+      </g>
+
+      <line x1="350" y1="310" x2="378" y2="310" stroke="var(--teal)" stroke-width="1.5"/>
+      <polygon points="378,310 372,307 372,313" fill="var(--teal)"/>
+    </svg>
+  </div>
+
+  <h2><span class="n">04</span> Chaîne d'attaque simplifiée</h2>
+  <div class="card">
+    <p style="margin-top:0">Tout se fait avec Metasploit. L'utilisateur « ouvre » le binaire (double-clic manuel en labo), Meterpreter se connecte à Kali, l'attaquant installe une persistance, dump les hashes avec mimikatz, puis exfiltre un fichier bidon.</p>
+    <div class="chain">
+      <div class="st"><b>Phishing</b><span>T1566.001</span></div><span class="arr">→</span>
+      <div class="st"><b>Exécution</b><span>T1204.002</span></div><span class="arr">→</span>
+      <div class="st"><b>Persistance</b><span>T1547.001</span></div><span class="arr">→</span>
+      <div class="st"><b>Vol creds</b><span>T1003.001</span></div><span class="arr">→</span>
+      <div class="st"><b>Exfil</b><span>T1041</span></div>
+    </div>
+    <p style="margin-bottom:0; font-size:13.5px; color:var(--muted)">5 techniques ATT&CK, chacune laisse une trace investigable. Pas de latéral (ça demanderait DC01). C'est suffisant pour un mini-projet.</p>
+  </div>
+
+  <h2><span class="n">05</span> Budget mémoire</h2>
+  <div class="card">
+    <div class="ram">
+      <div class="box">
+        <h3>Phase attaque (S0)</h3>
+        <ul>
+          <li class="reuse">rhel-wazuh (réutilisé) <b>4 Go</b></li>
+          <li class="reuse">Kali (réutilisé) <b>2 Go</b></li>
+          <li>WKSTN01 (nouveau) <b>3 Go</b></li>
+          <li style="color:var(--muted)">monitored VM (suspendue) · 0</li>
+          <li class="tot">Total ≈ <b>9 Go</b> + hôte</li>
+        </ul>
+      </div>
+      <div class="box">
+        <h3>Phase analyse (S1–6)</h3>
+        <ul>
+          <li>VM Analyste <b>4 Go</b></li>
+          <li class="tot">Total ≈ <b>4 Go</b> + hôte</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <h2><span class="n">06</span> Répartition travail</h2>
+  <div class="card">
+    <table>
+      <thead><tr><th>Semaine</th><th>Charge/pers.</th><th>Pilote</th></tr></thead>
+      <tbody>
+        <tr><td>S0 — build + attaque</td><td>≈ 4h ensemble</td><td class="who-BOTH">BOTH</td></tr>
+        <tr><td>S1 — intake + plan</td><td>≈ 3h</td><td class="who-BOTH">BOTH + split court</td></tr>
+        <tr><td>S2 — hôte (mémoire + disque + logs)</td><td>≈ 5–6h</td><td class="who-A">A pilote</td></tr>
+        <tr><td>S3 — réseau + malware</td><td>≈ 5h</td><td class="who-B">B pilote</td></tr>
+        <tr><td>S4 — timeline + cause/impact</td><td>≈ 4h ensemble</td><td class="who-BOTH">BOTH</td></tr>
+        <tr><td>S5 — confinement/prévention</td><td>≈ 4h</td><td class="who-BOTH">Split naturel</td></tr>
+        <tr><td>S6 — rapport + démo</td><td>≈ 6h</td><td class="who-BOTH">BOTH</td></tr>
+      </tbody>
+    </table>
+    <p style="margin-bottom:0; font-size:13.5px; color:var(--muted); margin-top:10px"><b>Total estimé :</b> environ 30–35h par personne sur 6 semaines + 1 journée S0. Raisonnable pour un mini-projet à deux.</p>
+  </div>
+
+  <footer>Oussama Hamada &amp; Aladine Fadhli · Projet 4 version allégée · 6 semaines du prof respectées</footer>
+</div>
+</body>
+</html>

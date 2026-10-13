@@ -1,0 +1,25 @@
+type,valeur,contexte,source,technique_attack
+ip,192.168.100.30,Attaquant (Kali) — livraison C2 et exfil,hote+reseau,T1566.001/T1041/T1071
+ip,192.168.100.40,Victime (WKSTN01),hote+reseau,-
+ip,192.168.100.10,SIEM Wazuh (benin - telemetrie),reseau,-
+port,8080,Livraison du payload (HTTP GET),hote+reseau,T1566.001
+port,4444,Canal C2 Meterpreter reverse_tcp,hote+reseau,T1071/T1571
+port,8000,Exfiltration HTTP (POST),hote+reseau,T1041
+url,http://192.168.100.30:8080/invoice_october.exe,URL de livraison du payload,hote+reseau,T1566.001
+url,http://192.168.100.30:8000/exfil/customers,URL de reception de l'exfiltration,hote+reseau,T1041
+filename,invoice_october.exe,Payload - stager Meterpreter deguise en facture,hote+reseau,T1204.002
+path,C:\Users\WKSTN01\Downloads\invoice_october.exe,Emplacement de depot du payload,hote,T1566.001
+path,C:\Users\WKSTN01\AppData\Roaming\sysupdate.exe,Binaire de persistance depose (non execute),hote,T1547.001
+path,C:\Users\WKSTN01\Documents\customers.csv,Fichier exfiltre (133 octets),hote,T1041
+regkey,HKCU\Software\Microsoft\Windows\CurrentVersion\Run\WindowsUpdate,Cle Run de persistance = ...\sysupdate.exe,hote,T1547.001
+sha256,5eb50394034d6a28dbaaf84caf6c9d9a96a9fb2b23d3a00ccf246e9d5ee864a2,invoice_october.exe,hote+reseau,T1204.002
+md5,0B3C1C3CBC0DE6FE01E6CEF2F9D13DE0,invoice_october.exe,hote,T1204.002
+imphash,C2D02FC98F1D75D7B9457468EC75DA0E,invoice_october.exe,hote,T1204.002
+sha256,5f682e65dadd885e7d9db9d106fdcb9cee6f99d84c303002e96d8ed09b837665,exfil_20261007T150854Z.bin (blob exfiltre recu),reseau,T1041
+sha256,61a96bae9481853172fc42e83bfec4848a8af84dc53f59bc052e751dea0fe1a7,wk0.pcap (preuve reseau),reseau,-
+sha256,45c877b854dbe2ebd351706caeb249f9b7649347af74820b3916da37099c0d1b,attack.log (journal operateur),reseau,-
+user-agent,curl/8.4.0,Outil d'exfiltration cote victime,reseau,T1041
+server-banner,BaseHTTP/0.6 Python/3.13.12,Serveur HTTP artisanal cote attaquant (exfil_server.py),reseau,T1041
+artifact,INVOICE_OCTOBER.EXE-45D1FC4B.pf,Prefetch - preuve d'execution du payload,hote,T1204.002
+artifact,CURL.EXE-669CD8D3.pf,Prefetch - preuve d'execution de curl (exfil),hote,T1041
+malware-class,Meterpreter/Metasploit stager reverse TCP x64,Classification du payload,hote+reseau,T1204.002
