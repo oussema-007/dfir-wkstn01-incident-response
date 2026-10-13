@@ -9,6 +9,7 @@
 ![Forensics](https://img.shields.io/badge/forensics-Volatility%203%20%7C%20Autopsy-purple)
 ![ATT&CK](https://img.shields.io/badge/MITRE%20ATT%26CK-5%20techniques-orange)
 ![Report](https://img.shields.io/badge/report-PDF%2018%20pages-green)
+![License](https://img.shields.io/badge/license-MIT-lightgrey)
 
 **Analyst A (host / endpoint / SIEM):** Oussama Hamada  
 **Analyst B (network / malware):** Amir Ghdiri
